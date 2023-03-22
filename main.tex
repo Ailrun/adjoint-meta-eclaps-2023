@@ -1,0 +1,131 @@
+\documentclass[letterpaper,12pt,aspectratio=169,show notes]{beamer}
+
+\setbeameroption{show notes on second screen=right}
+
+\definecolor{darkgreygreen}{RGB}{32, 39, 41}
+\definecolor{grey}{rgb}{0.7, 0.7, 0.7}
+\setbeamercolor{structure}{fg=darkgreygreen}
+
+\beamertemplatenavigationsymbolsempty
+\setbeamercolor{footline}{fg=structure}
+\setbeamerfont{footline}{series=\bfseries,size=\scriptsize}
+\addtobeamertemplate{navigation symbols}{}{%
+  \usebeamerfont{footline}%
+  \usebeamercolor[fg]{footline}%
+  \hspace{1em}%
+  \insertframenumber/\inserttotalframenumber
+}
+
+\mode<presentation>
+{
+  \useinnertheme{rectangles}
+  \useoutertheme{default}
+  \usecolortheme{whale}
+  % \setbeamerfont{block title}{size=\large}
+  \setbeamertemplate{itemize item}{\color{orange}$\blacktriangleright$}
+  \setbeamertemplate{itemize subitem}{\color{grey}\scriptsize{$\blacktriangleright$}}
+  % \setbeamercolor{titlelike}{parent=structure,bg=white!85!MSUgreen}
+  % \setbeamercovered{transparent}
+}
+
+\setbeamerfont{title}{series=\bfseries,family*={Noto Serif}}
+\setbeamerfont{author}{series=\bfseries,family*={Noto Serif}}
+\setbeamerfont{frametitle}{series=\bfseries,family*={Noto Serif}}
+\makeatletter
+\setbeamertemplate{title page}{%
+  \vbox{}
+  \vfill
+  \begingroup
+  \hfill
+  \begin{beamercolorbox}[wd=0.55\paperwidth,sep=8pt,center]{title}
+    \usebeamerfont{title}\inserttitle\par%
+    \ifx\insertsubtitle\@empty%
+    \else%
+      \vskip0.25em%
+      {\usebeamerfont{subtitle}\usebeamercolor[fg]{subtitle}\insertsubtitle\par}%
+    \fi%
+  \end{beamercolorbox}%
+  \hfill
+  \hfill
+  \vskip5em\par
+  \hfill
+  \begin{beamercolorbox}[wd=0.55\paperwidth,sep=8pt,center]{author}
+    \usebeamerfont{author}\insertauthor
+  \end{beamercolorbox}
+  % \begin{beamercolorbox}[sep=8pt,center]{institute}
+  %   \usebeamerfont{institute}\insertinstitute
+  % \end{beamercolorbox}
+  % \begin{beamercolorbox}[sep=8pt,center]{date}
+  %   \usebeamerfont{date}\insertdate
+  % \end{beamercolorbox}\vskip0.5em
+  \hfill
+  \hfill
+  \endgroup
+  \vfill
+}
+\makeatother
+
+\setbeamertemplate{section page}{
+  \begin{beamercolorbox}[sep=12pt,center]{section title}
+    \usebeamerfont{section title}\insertsection\par
+  \end{beamercolorbox}
+}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{attrib}
+\usepackage{bussproofs}
+\usepackage{charter}
+\usepackage{fontspec}
+\usepackage{listings}
+\usepackage{microtype}
+\usepackage{nicefrac}
+\usepackage{tikz}
+\usepackage{upquote}
+\usepackage{wasysym}
+\usepackage{xcolor}
+
+\setmonofont{JuliaMono}
+
+\AtBeginDocument{%
+  \title{Multi-modal Programming\\with Resource Guarantees}
+  \date{}
+  \author[C. Jang]{Junyoung/``Clare'' Jang}
+}
+
+\pgfkeys{/tikz/fulloverlay/.code={\pgfkeysalso{overlay, remember picture, shift=(current page.south west), x=(current page.south east), y=(current page.north west)}}}
+\tikzset{
+  invisible/.style={opacity=0,text opacity=0},
+  visible on/.style={alt={#1{}{invisible}}},
+  alt/.code args={<#1>#2#3}{%
+    \alt<#1>{\pgfkeysalso{#2}}{\pgfkeysalso{#3}} % \pgfkeysalso doesn't change the path
+  },
+}
+
+\begin{document}
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}[fragile]{Useful Modalities for Various Applications}
+  \begin{tikzpicture}[fulloverlay]
+	
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Modalities in Essence}
+  \begin{tikzpicture}[fulloverlay]
+	\node at (0.5,0.5) {abc};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Metaprogramming Example}
+  
+\end{frame}
+
+\begin{frame}{Resource Availability Example}
+  
+\end{frame}
+
+\end{document}
