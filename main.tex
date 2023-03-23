@@ -117,6 +117,9 @@
   },
 }
 
+\colorlet{metaprogram}{violet}
+\colorlet{linearity}{blue}
+\colorlet{privacy}{orange}
 \lstdefinelanguage{Adjoint}%
 {%
   keywords=%
@@ -132,10 +135,12 @@
     match,with,private%
   },%
   morecomment=[l]{--},%
-  moredelim=[is][\color{orange}]{o<<}{>>o},%
-  moredelim=[is][\color{violet}]{v<<}{>>v},%
-  moredelim=[is][\color{NavyBlue}]{nb<<}{>>nb},%
-  moredelim=[is][\color{WildStrawberry}]{ws<<}{>>ws},%
+  moredelim=**[is][\color{metaprogram}]{m<<}{>>m},%
+  moredelim=**[is][\color{linearity}]{l<<}{>>l},%
+  moredelim=**[is][\color{privacy}]{p<<}{>>p},%
+  moredelim=**[is][\color{violet}]{v<<}{>>v},%
+  moredelim=**[is][\color{NavyBlue}]{nb<<}{>>nb},%
+  moredelim=**[is][\color{WildStrawberry}]{ws<<}{>>ws},%
   sensitive,
 }
 \lstset{%
@@ -164,9 +169,6 @@
 \lstloadlanguages{Adjoint}
 \lstset{language=Adjoint}
 
-\colorlet{metaprogram}{violet}
-\colorlet{linearity}{blue}
-\colorlet{privacy}{orange}
 \begin{document}
 \begin{frame}
   \titlepage
@@ -276,9 +278,20 @@ pow (suc n) =
   return$^c_p$ (lift$^c_p$ (fun x -> x * (unlift$^c_p$ (C)) x))
       \end{lstlisting}
     };
-    \draw[NavyBlue,visible on=<2>] (0.415,0.66) -- (0.55,0.66);
+    \draw[NavyBlue,visible on=<2>] (0.415,0.65) -- (0.55,0.65);
 
     \node[text width=0.58\paperwidth,visible on=<3>] at (0.31,0.6) {
+      \begin{lstlisting}
+pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
+pow 0       = return$^c_p$ (lift$^c_p$ (fun x -> 1))
+pow (suc n) =
+  let return$^c_p$ C = pow n in
+  nb<<return$\color{NavyBlue}^c_p$ (lift$\color{NavyBlue}^c_p$ (fun x -> x * (unlift$\color{NavyBlue}^c_p$ (C)) x))>>nb
+      \end{lstlisting}
+    };
+    \draw[NavyBlue,visible on=<3>] (0.255,0.495) -- (0.64,0.495);
+
+    \node[text width=0.58\paperwidth,visible on=<4->] at (0.31,0.6) {
       \begin{lstlisting}
 pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
 pow 0       = return$^c_p$ (lift$^c_p$ (fun x -> 1))
@@ -288,35 +301,14 @@ pow (suc n) =
       \end{lstlisting}
     };
 
-    \node[text width=0.58\paperwidth,visible on=<4>] at (0.31,0.6) {
-      \begin{lstlisting}
-pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
-pow 0       = return$^c_p$ (lift$^c_p$ (fun x -> 1))
-pow (suc n) =
-  let return$^c_p$ C = pow n in
-  nb<<return$\color{NavyBlue}^c_p$ (lift$\color{NavyBlue}^c_p$ (fun x -> x * (unlift$\color{NavyBlue}^c_p$ (C)) x))>>nb
-      \end{lstlisting}
-    };
-    \draw[NavyBlue,visible on=<4>] (0.09,0.465) -- (0.475,0.465);
-
-    \node[text width=0.58\paperwidth,visible on=<5->] at (0.31,0.6) {
-      \begin{lstlisting}
-pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
-pow 0       = return$^c_p$ (lift$^c_p$ (fun x -> 1))
-pow (suc n) =
-  let return$^c_p$ C = pow n in
-  return$^c_p$ (lift$^c_p$ (fun x -> x * (unlift$^c_p$ (C)) x))
-      \end{lstlisting}
-    };
-
     \node[visible on=<5->,text width=\textwidth,anchor=west] at (0.015,0.25) {\lstinline!pow 2! gives\\ \lstinline!return$^c_p$ (lift$^c_p$ (fun x$_1$ -> x$_1$ * (fun x$_2$ -> x$_2$ * (fun x$_3$ -> 1) x$_2$) x$_1$))!};
-    \node[visible on=<6>] at (0.5,0.1) {But this requires {\color{red}\(2\) store-loads}!};
+    \node[visible on=<6>] at (0.5,0.1) {But this requires {\color{WildStrawberry}\(O(n)\) store-loads} for every call!};
   \end{tikzpicture}  
 \end{frame}
 
 \begin{frame}[fragile]{Separation of Concern in Metaprogramming}
   \begin{tikzpicture}[fulloverlay]
-    \node[text width=0.58\paperwidth] at (0.31,0.5) {
+    \node[visible on=<1>,text width=0.58\paperwidth] at (0.31,0.5) {
       \begin{lstlisting}
 powHelper : nat -> ^|$^c_p$(nat -> nat)
 powHelper 0       = lift$^c_p$ (fun x -> 1)
@@ -329,7 +321,54 @@ pow dn =
   return$^c_p$ (powHelper n)
       \end{lstlisting}
     };
-  \end{tikzpicture}  
+    \node[visible on=<2>,text width=0.58\paperwidth] at (0.31,0.5) {
+      \begin{lstlisting}
+powHelper : nat -> ^|$^c_p$(nat -> nat)
+powHelper 0       = lift$^c_p$ (fun x -> 1)
+powHelper (suc n) =
+  lift$^c_p$ (fun x -> x * nb<<(unlift$\color{NavyBlue}^c_p$ (powHelper n))>>nb x))
+
+pow : v|$^c_p$nat -> v|$^c_p$^|$^c_p$(nat -> nat)
+pow dn =
+  let return$^c_p$ n = dn in
+  return$^c_p$ (powHelper n)
+      \end{lstlisting}
+    };
+    \node[visible on=<2>,NavyBlue] (direct) at (0.65,0.4) {Direct recursive call and composition};
+    \draw[visible on=<2>,->,NavyBlue] (direct) -- (0.5,0.55);
+
+    \node[visible on=<3>,text width=0.58\paperwidth] at (0.31,0.5) {
+      \begin{lstlisting}
+powHelper : nat -> ^|$^c_p$(nat -> nat)
+powHelper 0       = lift$^c_p$ (fun x -> 1)
+powHelper (suc n) =
+  lift$^c_p$ (fun x -> x * unlift$^c_p$ (powHelper n)) x))
+
+pow : v|$^c_p$nat -> v|$^c_p$^|$^c_p$(nat -> nat)
+pow dn =
+  ws<<let return$\color{WildStrawberry}^c_p$ n = dn in>>ws
+  return$^c_p$ (powHelper n)
+      \end{lstlisting}
+    };
+    \node[visible on=<3>,WildStrawberry] (single) at (0.65,0.3) {Single load};
+    \draw[visible on=<3>,->,WildStrawberry] (single) -- (0.33,0.37);
+
+    \node[visible on=<4>,text width=0.58\paperwidth] at (0.31,0.5) {
+      \begin{lstlisting}
+powHelper : nat -> ^|$^c_p$(nat -> nat)
+powHelper 0       = lift$^c_p$ (fun x -> 1)
+powHelper (suc n) =
+  lift$^c_p$ (fun x -> x * unlift$^c_p$ (powHelper n)) x))
+
+pow : ws<<v|$\color{WildStrawberry}^c_p$nat>>ws -> v|$^c_p$^|$^c_p$(nat -> nat)
+pow dn =
+  let return$^c_p$ n = dn in
+  return$^c_p$ (powHelper n)
+      \end{lstlisting}
+    };
+    \node[visible on=<4>,WildStrawberry] (separate) at (0.5,0.25) {Separate storing \lstinline!nat! from code fragment processing};
+    \draw[visible on=<4>,->,WildStrawberry] ($(separate.north)+(0.1,0)$) -- (0.18,0.45);
+\end{tikzpicture}  
 \end{frame}
 
 \begin{frame}[fragile]{Resource Availability Example}
@@ -337,11 +376,52 @@ pow dn =
     \node[visible on=<1>,text width=0.58\paperwidth] at (0.31,0.5) {
       \begin{lstlisting}
 withAlloc : nat -o nat -> (nat array -o nat * nat array) -o nat
+
 read      : nat array -o nat        -o nat * nat array
+
 write     : nat array -o nat -o nat -o nat array
       \end{lstlisting}
     };
-    \node[visible on=<2>,text width=0.58\paperwidth] at (0.31,0.4) {
+
+    \node[visible on=<2>,text width=0.58\paperwidth] at (0.31,0.5) {
+      \begin{lstlisting}
+ws<<withAlloc : nat -o nat -> (nat array -o nat * nat array) -o nat>>ws
+
+read      : nat array -o nat        -o nat * nat array
+
+write     : nat array -o nat -o nat -o nat array
+      \end{lstlisting}
+    };
+    \node[visible on=<2>,anchor=base,WildStrawberry] at (0.205,0.64) {size};
+    \node[visible on=<2>,anchor=base,WildStrawberry] at (0.3,0.56) {initial entry};
+    \node[visible on=<2>,anchor=base,WildStrawberry] at (0.57,0.64) {processing function};
+
+    \node[visible on=<3>,text width=0.58\paperwidth] at (0.31,0.5) {
+      \begin{lstlisting}
+withAlloc : nat -o nat -> (nat array -o nat * nat array) -o nat
+
+ws<<read      : nat array -o nat        -o nat * nat array>>ws
+
+write     : nat array -o nat -o nat -o nat array
+      \end{lstlisting}
+    };
+    \node[visible on=<3>,anchor=base,WildStrawberry] at (0.245,0.55) {array tag};
+    \node[visible on=<3>,anchor=base,WildStrawberry] at (0.38,0.47) {index};
+
+    \node[visible on=<4>,text width=0.58\paperwidth] at (0.31,0.5) {
+      \begin{lstlisting}
+withAlloc : nat -o nat -> (nat array -o nat * nat array) -o nat
+
+read      : nat array -o nat        -o nat * nat array
+
+ws<<write     : nat array -o nat -o nat -o nat array>>ws
+      \end{lstlisting}
+    };
+    \node[visible on=<4>,anchor=base,WildStrawberry] at (0.245,0.45) {array tag};
+    \node[visible on=<4>,anchor=base,WildStrawberry] at (0.38,0.37) {index};
+    \node[visible on=<4>,anchor=base,WildStrawberry] at (0.47,0.45) {new value};
+
+    \node[visible on=<5>,text width=0.58\paperwidth] at (0.31,0.4) {
       \begin{lstlisting}
 foldRight : nat ->
             v|$^{c}_{p}$^|$^{c}_{p}$ ((nat -o nat -o nat) ->
@@ -358,6 +438,54 @@ foldRight (suc n) =
     (unlift$^{c}_{p}$ C) f (f z) xs1))
       \end{lstlisting}
     };
+    \node[visible on=<6>,text width=0.58\paperwidth] at (0.31,0.4) {
+      \begin{lstlisting}
+foldRight : nat ws<<->>>ws
+            v|$^{c}_{p}$^|$^{c}_{p}$ ((nat -o nat -o nat) ws<<->>>ws
+                    nat -o
+                    nat array -o
+                    (nat * nat array))
+foldRight 0       =
+  return$^{c}_{p}$ (lift$^{c}_{p}$ (ws<<fun f ->>>ws fun z -o fun xs -o (z , xs)))
+foldRight (suc n) =
+  let return$^{c}_{p}$ C = foldRight n in
+  let return$^{c}_{p}$ N = codifyNat n in
+  return$^{c}_{p}$ (lift$^{c}_{p}$ (ws<<fun f ->>>ws fun z -o fun xs0 -o
+    llet (v, xs1) = read xs0 (unlift$^{c}_{p}$ N) in
+    (unlift$^{c}_{p}$ C) f (f z) xs1))
+      \end{lstlisting}
+    };
+    \node[visible on=<6>,WildStrawberry] at (0.8,0.7) {Syntactic sugar of \lstinline!v|$^{u}_{p}$^|$^{u}_{p}$ A -o B!};
+    \node[visible on=<7>,text width=0.58\paperwidth] at (0.31,0.4) {
+      \begin{lstlisting}
+foldRight : nat ->
+            v|$^{c}_{p}$^|$^{c}_{p}$ ((nat -o nat -o nat) ->
+                    nat -o
+                    nat array -o
+                    (nat * nat array))
+foldRight 0       =
+  return$^{c}_{p}$ (lift$^{c}_{p}$ (fun f -> fun z -o fun xs -o (z , xs)))
+foldRight (suc n) =
+  let return$^{c}_{p}$ C = foldRight n in
+  let return$^{c}_{p}$ N = ws<<codifyNat n>>ws in
+  return$^{c}_{p}$ (lift$^{c}_{p}$ (fun f -> fun z -o fun xs0 -o
+    llet (v, xs1) = read xs0 (unlift$^{c}_{p}$ N) in
+    (unlift$^{c}_{p}$ C) f (f z) xs1))
+      \end{lstlisting}
+    };
+    \node[visible on=<7>,WildStrawberry] at (0.8,0.3) {\lstinline!codifyNat : nat -> v|$^{c}_{p}$^|$^{c}_{p}$nat!};
+
+    \node[visible on=<8->,text width=0.58\paperwidth] at (0.31,0.6) {
+      \begin{lstlisting}
+let size = 5 in
+m<<let return$^{c}_{p}$ fold = foldRight size in>>m
+withAlloc size 1
+  (fun xs0 -o
+    l<<llet xs1 = write xs0 2 2 in>>l
+    m<<(unlift$^{c}_{p}$ fold) (+) 0 xs1>>m)
+      \end{lstlisting}
+    };
+    \node[visible on=<9>] at (0.5,0.3) {We can use {\color{metaprogram}metaprogramming} under the existence of {\color{linearity}a side effect}!};
   \end{tikzpicture}  
 \end{frame}
 
