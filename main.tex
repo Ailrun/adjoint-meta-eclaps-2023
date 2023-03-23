@@ -1,6 +1,26 @@
-\documentclass[letterpaper,12pt,aspectratio=169,show notes]{beamer}
+\documentclass[letterpaper,12pt,aspectratio=169,show notes,dvipsnames]{beamer}
 
 \setbeameroption{show notes on second screen=right}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{attrib}
+\usepackage{bussproofs}
+\usepackage{charter}
+\usepackage{fontspec}
+\usepackage{listings}
+\usepackage{microtype}
+\usepackage{nicefrac}
+\usepackage{tikz}
+\usetikzlibrary{calc,shapes.callouts}
+\usepackage{upquote}
+\usepackage{wasysym}
+
+\setmainfont[Mapping=tex-text]{Noto Sans}
+\newfontfamily\NotoSans[Mapping=tex-text]{Noto Sans}
+\newfontfamily\NotoSerif[Mapping=tex-text]{Noto Serif}
+\setmonofont{JuliaMono}
 
 \definecolor{darkgreygreen}{RGB}{32, 39, 41}
 \definecolor{grey}{rgb}{0.7, 0.7, 0.7}
@@ -22,22 +42,22 @@
   \useoutertheme{default}
   \usecolortheme{whale}
   % \setbeamerfont{block title}{size=\large}
-  \setbeamertemplate{itemize item}{\color{orange}$\blacktriangleright$}
+  \setbeamertemplate{itemize item}{\color{grey}$\blacktriangleright$}
   \setbeamertemplate{itemize subitem}{\color{grey}\scriptsize{$\blacktriangleright$}}
   % \setbeamercolor{titlelike}{parent=structure,bg=white!85!MSUgreen}
   % \setbeamercovered{transparent}
 }
 
-\setbeamerfont{title}{series=\bfseries,family*={Noto Serif}}
-\setbeamerfont{author}{series=\bfseries,family*={Noto Serif}}
-\setbeamerfont{frametitle}{series=\bfseries,family*={Noto Serif}}
+\setbeamerfont{title}{family=\NotoSerif}
+\setbeamerfont{author}{family=\NotoSerif}
+\setbeamerfont{frametitle}{family=\NotoSerif}
 \makeatletter
 \setbeamertemplate{title page}{%
   \vbox{}
   \vfill
   \begingroup
   \hfill
-  \begin{beamercolorbox}[wd=0.55\paperwidth,sep=8pt,center]{title}
+  \begin{beamercolorbox}[wd=0.6\paperwidth,sep=10pt,center]{title}
     \usebeamerfont{title}\inserttitle\par%
     \ifx\insertsubtitle\@empty%
     \else%
@@ -47,19 +67,27 @@
   \end{beamercolorbox}%
   \hfill
   \hfill
-  \vskip5em\par
+  \vskip2em\par
   \hfill
-  \begin{beamercolorbox}[wd=0.55\paperwidth,sep=8pt,center]{author}
+  \begin{beamercolorbox}[wd=0.6\paperwidth,sep=8pt,center]{author}
     \usebeamerfont{author}\insertauthor
   \end{beamercolorbox}
-  % \begin{beamercolorbox}[sep=8pt,center]{institute}
-  %   \usebeamerfont{institute}\insertinstitute
-  % \end{beamercolorbox}
+  \hfill
+  \hfill
+  \par
+  \hfill
+  \begin{beamercolorbox}[wd=0.6\paperwidth,sep=8pt,center]{institute}
+    \usebeamerfont{institute}\insertinstitute
+  \end{beamercolorbox}
+  \hfill
+  \hfill
+  % \par
+  % \hfill
   % \begin{beamercolorbox}[sep=8pt,center]{date}
   %   \usebeamerfont{date}\insertdate
   % \end{beamercolorbox}\vskip0.5em
-  \hfill
-  \hfill
+  % \hfill
+  % \hfill
   \endgroup
   \vfill
 }
@@ -70,32 +98,18 @@
     \usebeamerfont{section title}\insertsection\par
   \end{beamercolorbox}
 }
-
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{amsthm}
-\usepackage{attrib}
-\usepackage{bussproofs}
-\usepackage{charter}
-\usepackage{fontspec}
-\usepackage{listings}
-\usepackage{microtype}
-\usepackage{nicefrac}
-\usepackage{tikz}
-\usepackage{upquote}
-\usepackage{wasysym}
-\usepackage{xcolor}
-
-\setmonofont{JuliaMono}
+\setbeamertemplate{frametitle}[default][left,sep=0.5cm]
 
 \AtBeginDocument{%
-  \title{Multi-modal Programming\\with Resource Guarantees}
+  \title{Multi-modal Programming with Resource Guarantees}
   \date{}
   \author[C. Jang]{Junyoung/``Clare'' Jang}
+  \institute{McGill University}
 }
 
 \pgfkeys{/tikz/fulloverlay/.code={\pgfkeysalso{overlay, remember picture, shift=(current page.south west), x=(current page.south east), y=(current page.north west)}}}
 \tikzset{
+  every node/.style={font=\NotoSans},
   invisible/.style={opacity=0,text opacity=0},
   visible on/.style={alt={#1{}{invisible}}},
   alt/.code args={<#1>#2#3}{%
@@ -103,6 +117,56 @@
   },
 }
 
+\lstdefinelanguage{Adjoint}%
+{%
+  keywords=%
+  {%
+    box, %
+    lift, unlift,liftp,unliftp,%
+    return,llet,let,in,%
+    returnp,%
+    nat,suc,%
+    array,%
+    fun,%
+    if,then,else,%
+    match,with,private%
+  },%
+  morecomment=[l]{--},%
+  moredelim=[is][\color{orange}]{o<<}{>>o},%
+  moredelim=[is][\color{violet}]{v<<}{>>v},%
+  moredelim=[is][\color{NavyBlue}]{nb<<}{>>nb},%
+  moredelim=[is][\color{WildStrawberry}]{ws<<}{>>ws},%
+  sensitive,
+}
+\lstset{%
+  basicstyle=\ttfamily\footnotesize,%
+  keywordstyle=\bfseries,%
+  literate=%
+  {->}{{\(\rightarrow\)}}2 %
+  {-o}{{\(\multimap\)}}2 %
+  {^|}{{\(\uparrow\)}}2 %
+  {v|}{{\(\downarrow\)}}2 %
+  {b[]b}{{\(\Box\)}}2 % box
+  {\\alpha}{{\(\alpha\)}}1 %
+  {\\beta}{{\(\beta\)}}1 %
+  {\\tau}{{\(\tau\)}}1 %
+  {\\sigma}{{\(\sigma\)}}1 %
+  {\\rho}{{\(\rho\)}}1 %
+  ,%
+  keepspaces=true,%
+  % numbers=left,%
+  mathescape=true,%
+  xleftmargin=0.05in,%
+  resetmargins=true,%
+  belowskip=0.05in,%
+  aboveskip=0.05in,%
+}
+\lstloadlanguages{Adjoint}
+\lstset{language=Adjoint}
+
+\colorlet{metaprogram}{violet}
+\colorlet{linearity}{blue}
+\colorlet{privacy}{orange}
 \begin{document}
 \begin{frame}
   \titlepage
@@ -110,22 +174,313 @@
 
 \begin{frame}[fragile]{Useful Modalities for Various Applications}
   \begin{tikzpicture}[fulloverlay]
-	
+	\node[visible on=<2->,metaprogram] (mp) at (0.25,0.65) {\bfseries Metaprogramming};
+
+    \node[visible on=<3->,anchor=base,overlay,rectangle callout,
+    callout relative pointer={(0.1cm,0.3cm)},text width=10em,
+    draw=metaprogram,color=metaprogram,align=center]
+    at ($(mp.south)-(0.1cm,\ht0+0.6cm)$) {How to characterize code fragments?};
+
+	\node[visible on=<4->,linearity] (ra) at (0.6,0.5) {\bfseries Resource Availability};
+
+    \node[visible on=<5->,anchor=base,overlay,rectangle callout,
+    callout relative pointer={(-0.1cm,-0.3cm)},text width=12em,
+    draw=linearity,color=linearity,align=center]
+    at ($(ra.north)+(0.1cm,\ht0+0.9cm)$) {How many resources are available?};
+
+	\node[visible on=<6->,privacy] (rp) at (0.4,0.3) {\bfseries Resource Privacy};
+
+    \node[visible on=<7->,anchor=west,overlay,rectangle callout,
+    callout relative pointer={(-0.3cm,-0.02cm)},text width=10em,
+    draw=privacy,color=privacy,align=center]
+    at ($(rp.east)+(\ht0+0.3cm,0.2cm)$) {Is resource\\access permitted?};
   \end{tikzpicture}
 \end{frame}
 
 \begin{frame}{Modalities in Essence}
   \begin{tikzpicture}[fulloverlay]
-	\node at (0.5,0.5) {abc};
+	\node[metaprogram!60] (mp) at (0.25,0.65) {\bfseries Metaprogramming};
+	\node[visible on=<2->,metaprogram,text width=14em,align=center] at ($(mp.south)-(-1cm,\ht0+0.3cm)$)
+    {\bfseries \alt<5->{{\color{white}Code/Program}}{{Code/Program}} Distinction\\with Intensionality};
+
+	\node[linearity!60] (ra) at (0.6,0.5) {\bfseries Resource Availability};
+	\node[visible on=<3->,linearity,text width=17em,align=center] at ($(ra.south)-(-1.3cm,\ht0+0.3cm)$)
+    {\bfseries \alt<5->{{\color{white}Linear/Unrestricted}}{{Linear/Unrestricted}} Distinction\\with Structural Rules};
+
+	\node[privacy!60] (rp) at (0.4,0.3) {\bfseries Resource Privacy};
+	\node[visible on=<4->,privacy,text width=14em,align=center] at ($(rp.south)-(-1.1cm,\ht0+0.1cm)$)
+    {\bfseries \alt<5->{{\color{white}Private/Public}}{{Private/Public}} Distinction};
+
+	\draw[visible on=<6->,rounded corners=0.5cm,draw=darkgreygreen] (0.05,0.75) rectangle (0.95,0.2);
+	\node[visible on=<6->,color=darkgreygreen,fill=white] at (0.5,0.75) {Single Uniform Framework};
   \end{tikzpicture}
 \end{frame}
 
-\begin{frame}{Metaprogramming Example}
-  
+\begin{frame}{Modalities for Distinction}
+  \begin{tikzpicture}[fulloverlay]
+    \node[visible on=<-1>,anchor=west] at (0.05,0.75) {For any two sectors \(m_1\) and \(m_2\),};
+    \node[visible on=<2>,anchor=west] at (0.05,0.75) {For \color{metaprogram}{\bfseries metaprogramming}};
+    \node[visible on=<3>,anchor=west] at (0.05,0.75) {For \color{privacy}{\bfseries resource privacy}};
+
+    \draw
+    (0.15,0.6) rectangle (0.45,0.45)
+    (0.15,0.45) rectangle (0.45,0.3);
+    \node[visible on=<-1>] at (0.3,0.525) {\(m_2\)};
+    \node[visible on=<-1>] at (0.3,0.375) {\(m_1\)};
+    \node[visible on=<2>,metaprogram] at (0.3,0.525) {\(c\) : Code};
+    \node[visible on=<2>,metaprogram] at (0.3,0.375) {\(p\) : Program};
+    \node[visible on=<3>,privacy] at (0.3,0.525) {\(p\) : \parbox{8em}{\centering Program with Public Resource}};
+    \node[visible on=<3>,privacy] at (0.3,0.375) {\(s\) : Secure Resource};
+
+    \node[visible on=<-1>] at (0.7,0.525) {\(\uparrow^{m_2}_{m_1}\) : \parbox{10em}{\centering A modality ``going up'' from \(m_1\) to \(m_2\)}};
+    \node[visible on=<-1>] at (0.7,0.375) {\(\downarrow^{m_2}_{m_1}\) : \parbox{10em}{\centering A modality ``going down'' from \(m_2\) to \(m_1\)}};
+    \node[visible on=<2>] at (0.7,0.525) {\(\uparrow^{c}_{p}\) : \parbox{10em}{\centering A modality ``going up'' from \(p\) to \(c\)}};
+    \node[visible on=<2>] at (0.7,0.375) {\(\downarrow^{c}_{p}\) : \parbox{10em}{\centering A modality ``going down'' from \(c\) to \(p\)}};
+    \node[visible on=<3>] at (0.7,0.525) {\(\uparrow^{p}_{s}\) : \parbox{10em}{\centering A modality ``going up'' from \(s\) to \(p\)}};
+    \node[visible on=<3>] at (0.7,0.375) {\(\downarrow^{p}_{s}\) : \parbox{10em}{\centering A modality ``going down'' from \(p\) to \(s\)}};
+  \end{tikzpicture}
 \end{frame}
 
-\begin{frame}{Resource Availability Example}
-  
+\begin{frame}{Going-up Modality}
+  \begin{tikzpicture}[fulloverlay]
+    \node at (0.5,0.6) {\(\mathsf{lift}^{m_2}_{m_1} (M)\) : \parbox{19em}{\centering Lift an expression \(M\) in \(m_1\) to its AST in \(m_2\)\\{}It is of type \(\uparrow^{m_2}_{m_1} A\) in \(m_2\) if \(M : A\) in \(m_1\)}};
+    \node at (0.5,0.4) {\(\mathsf{unlift}^{m_2}_{m_1} (M)\) : Execute/splice-in an AST \(M\)};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Going-down Modality}
+  \begin{tikzpicture}[fulloverlay]
+    \node at (0.5,0.6) {\(\mathsf{return}^{m_2}_{m_1} (M)\) : \parbox{22em}{\centering Store an expression \(M\) in \(m_2\) for future use in \(m_2\)\\{}It is of type \(\downarrow^{m_2}_{m_1} A\) in \(m_1\) if \(M : A\) in \(m_2\)}};
+    \node at (0.5,0.4) {\(\mathsf{let}\ \mathsf{return}^{m_2}_{m_1} x = M\ \mathsf{in}\ N\) : \parbox{22em}{\centering Load the stored value pointed by \(M\) into \(x\)\\and continue with \(N\)}};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]{Metaprogramming Example}
+  \begin{tikzpicture}[fulloverlay]
+    \node[text width=0.58\paperwidth,visible on=<1>] at (0.31,0.6) {
+      \begin{lstlisting}
+pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
+pow 0       = return$^c_p$ (lift$^c_p$ (fun x -> 1))
+pow (suc n) =
+  let return$^c_p$ C = pow n in
+  return$^c_p$ (lift$^c_p$ (fun x -> x * (unlift$^c_p$ (C)) x))
+      \end{lstlisting}
+    };
+
+    \node[text width=0.58\paperwidth,visible on=<2>] at (0.31,0.6) {
+      \begin{lstlisting}
+pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
+pow 0       = nb<<return$\color{NavyBlue}^c_p$ (lift$\color{NavyBlue}^c_p$ (fun x -> 1))>>nb
+pow (suc n) =
+  let return$^c_p$ C = pow n in
+  return$^c_p$ (lift$^c_p$ (fun x -> x * (unlift$^c_p$ (C)) x))
+      \end{lstlisting}
+    };
+    \draw[NavyBlue,visible on=<2>] (0.415,0.66) -- (0.55,0.66);
+
+    \node[text width=0.58\paperwidth,visible on=<3>] at (0.31,0.6) {
+      \begin{lstlisting}
+pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
+pow 0       = return$^c_p$ (lift$^c_p$ (fun x -> 1))
+pow (suc n) =
+  ws<<let return$\color{WildStrawberry}^c_p$ C = pow n in>>ws
+  return$^c_p$ (lift$^c_p$ (fun x -> x * (unlift$^c_p$ (C)) x))
+      \end{lstlisting}
+    };
+
+    \node[text width=0.58\paperwidth,visible on=<4>] at (0.31,0.6) {
+      \begin{lstlisting}
+pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
+pow 0       = return$^c_p$ (lift$^c_p$ (fun x -> 1))
+pow (suc n) =
+  let return$^c_p$ C = pow n in
+  nb<<return$\color{NavyBlue}^c_p$ (lift$\color{NavyBlue}^c_p$ (fun x -> x * (unlift$\color{NavyBlue}^c_p$ (C)) x))>>nb
+      \end{lstlisting}
+    };
+    \draw[NavyBlue,visible on=<4>] (0.09,0.465) -- (0.475,0.465);
+
+    \node[text width=0.58\paperwidth,visible on=<5->] at (0.31,0.6) {
+      \begin{lstlisting}
+pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
+pow 0       = return$^c_p$ (lift$^c_p$ (fun x -> 1))
+pow (suc n) =
+  let return$^c_p$ C = pow n in
+  return$^c_p$ (lift$^c_p$ (fun x -> x * (unlift$^c_p$ (C)) x))
+      \end{lstlisting}
+    };
+
+    \node[visible on=<5->,text width=\textwidth,anchor=west] at (0.015,0.25) {\lstinline!pow 2! gives\\ \lstinline!return$^c_p$ (lift$^c_p$ (fun x$_1$ -> x$_1$ * (fun x$_2$ -> x$_2$ * (fun x$_3$ -> 1) x$_2$) x$_1$))!};
+    \node[visible on=<6>] at (0.5,0.1) {But this requires {\color{red}\(2\) store-loads}!};
+  \end{tikzpicture}  
+\end{frame}
+
+\begin{frame}[fragile]{Separation of Concern in Metaprogramming}
+  \begin{tikzpicture}[fulloverlay]
+    \node[text width=0.58\paperwidth] at (0.31,0.5) {
+      \begin{lstlisting}
+powHelper : nat -> ^|$^c_p$(nat -> nat)
+powHelper 0       = lift$^c_p$ (fun x -> 1)
+powHelper (suc n) =
+  lift$^c_p$ (fun x -> x * (unlift$^c_p$ (powHelper n)) x))
+
+pow : v|$^c_p$nat -> v|$^c_p$^|$^c_p$(nat -> nat)
+pow dn =
+  let return$^c_p$ n = dn in
+  return$^c_p$ (powHelper n)
+      \end{lstlisting}
+    };
+  \end{tikzpicture}  
+\end{frame}
+
+\begin{frame}[fragile]{Resource Availability Example}
+  \begin{tikzpicture}[fulloverlay]
+    \node[visible on=<1>,text width=0.58\paperwidth] at (0.31,0.5) {
+      \begin{lstlisting}
+withAlloc : nat -o nat -> (nat array -o nat * nat array) -o nat
+read      : nat array -o nat        -o nat * nat array
+write     : nat array -o nat -o nat -o nat array
+      \end{lstlisting}
+    };
+    \node[visible on=<2>,text width=0.58\paperwidth] at (0.31,0.4) {
+      \begin{lstlisting}
+foldRight : nat ->
+            v|$^{c}_{p}$^|$^{c}_{p}$ ((nat -o nat -o nat) ->
+                    nat -o
+                    nat array -o
+                    (nat * nat array))
+foldRight 0       =
+  return$^{c}_{p}$ (lift$^{c}_{p}$ (fun f -> fun z -o fun xs -o (z , xs)))
+foldRight (suc n) =
+  let return$^{c}_{p}$ C = foldRight n in
+  let return$^{c}_{p}$ N = codifyNat n in
+  return$^{c}_{p}$ (lift$^{c}_{p}$ (fun f -> fun z -o fun xs0 -o
+    llet (v, xs1) = read xs0 (unlift$^{c}_{p}$ N) in
+    (unlift$^{c}_{p}$ C) f (f z) xs1))
+      \end{lstlisting}
+    };
+  \end{tikzpicture}  
+\end{frame}
+
+\begin{frame}[fragile]{Mode Specification}
+  \begin{tikzpicture}[fulloverlay]
+    \node at (0.5,0.65) {\(\vdots\)};
+    \draw (0.4,0.6) rectangle (0.5,0.5);
+    \draw (0.5,0.6) rectangle (0.6,0.5);
+    \draw
+    (0.4,0.5) rectangle (0.6,0.4)
+    node[pos=0.5] {\(\alt<2->{{\color{OliveGreen}m}}{m}\) : \(\alt<3->{{\color{BrickRed}\{\ldots\}}}{\{\ldots\}}, \alt<3->{{\color{MidnightBlue}\{\ldots\}}}{\{\ldots\}}\)};
+    \draw (0.4,0.4) rectangle (0.5,0.3);
+    \draw (0.5,0.4) rectangle (0.6,0.3);
+    \node at (0.5,0.25) {\(\vdots\)};
+
+    \draw[OliveGreen,visible on=<2->] (0.415,0.423) -- (0.44,0.423);
+    \node[OliveGreen,visible on=<2->] (name) at (0.2,0.4) {name of a mode};
+    \draw[OliveGreen,->,visible on=<2->] (name.east) -- (0.4275,0.418);
+
+    \draw[BrickRed,visible on=<3->] (0.457,0.423) -- (0.513,0.423);
+    \node[BrickRed,text width=10em,align=center,visible on=<3->] (st) at (0.2,0.3) {Structural rules \\allowed in the mode};
+    \draw[BrickRed,->,visible on=<3->] (st.east) -- (0.485,0.418);
+
+    \draw[MidnightBlue,visible on=<4->] (0.53,0.423) -- (0.58,0.423);
+    \node[MidnightBlue,align=center,visible on=<4->] (ty) at (0.2,0.2) {Types allowed in the mode};
+    \draw[MidnightBlue,->,visible on=<4->] (ty.east) -- (0.555,0.418);
+
+    \draw[->,visible on=<5->] (0.63,0.4) -- (0.63,0.2);
+    \node[text width=12em,align=center,visible on=<5->] at (0.8,0.3) {Modes that can use \\values of this mode};
+    \draw[->,visible on=<6->] (0.63,0.5) -- (0.63,0.7);
+    \node[text width=12em,align=center,visible on=<6->] at (0.8,0.6) {Modes whose values can \\be used in this mode};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}[fragile]{Examples of Mode Specifications}
+  \scriptsize
+  \begin{tikzpicture}[fulloverlay]
+    \draw
+    (0.1,0.7) rectangle (0.3,0.625)
+    node[pos=0.5] (stlc) {\(p\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\multimap\}\)};
+
+    \node at ($(stlc.south)-(0,0.05)$) {STLC};
+
+    \draw
+    (0.4,0.775) rectangle (0.6,0.7)
+    node[pos=0.5] {\(c\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\uparrow\}\)};
+    \draw
+    (0.4,0.7) rectangle (0.6,0.625)
+    node[pos=0.5] (meta) {\(p\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\downarrow,\multimap\}\)};
+
+    \node[text width=15em,align=center] at ($(meta.south)-(0,0.05)$) {Metaprogramming system \\based on S4 modal logic};
+
+    \draw
+    (0.7,0.775) rectangle (0.9,0.7)
+    node[pos=0.5] {\(u\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\uparrow\}\)};
+    \draw
+    (0.7,0.7) rectangle (0.9,0.625)
+    node[pos=0.5] (linear) {\(p\) : \(\{\}, \{\downarrow,\multimap\}\)};
+
+    \node[text width=15em,align=center] at ($(linear.south)-(0,0.05)$) {Linear type system with \(!\)};
+
+    \draw
+    (0.1,0.375) rectangle (0.3,0.3)
+    node[pos=0.5] {\(p\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\uparrow,\multimap\}\)};
+    \draw
+    (0.1,0.3) rectangle (0.3,0.225)
+    node[pos=0.5] (privacy) {\(s\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\downarrow\}\)};
+
+    \node[text width=15em,align=center] at ($(privacy.south)-(0,0.05)$) {Privacy tracking type system};
+
+    \draw
+    (0.4,0.45) rectangle (0.6,0.375)
+    node[pos=0.5] {\(c\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\uparrow\}\)};
+    \draw
+    (0.4,0.375) rectangle (0.6,0.3)
+    node[pos=0.5] {\(p\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\uparrow,\downarrow,\multimap\}\)};
+    \draw
+    (0.4,0.3) rectangle (0.6,0.225)
+    node[pos=0.5] (metaprivacy) {\(s\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\downarrow\}\)};
+
+    \node[text width=15em,align=center] at ($(metaprivacy.south)-(0,0.05)$) {System with privacy and metaprogramming};
+
+    \draw
+    (0.65,0.45) rectangle (0.8,0.375)
+    node[pos=0.5] {\(c\) : \(\{\}, \{\uparrow\}\)};
+    \draw
+    (0.8,0.45) rectangle (0.95,0.375)
+    node[pos=0.5] {\(u\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\uparrow\}\)};
+    \draw
+    (0.65,0.375) rectangle (0.95,0.3)
+    node[pos=0.5] (metalinear) {\(p\) : \(\{\}, \{\downarrow,\multimap\}\)};
+
+    \node[text width=15em,align=center] at ($(metalinear.south)-(0,0.125)$) {System with linearity and metaprogramming};
+
+    % \node at (0.5,0.45) {\(\alt<2->{{\color{OliveGreen}m}}{m} : \alt<3->{{\color{BrickRed}\{\ldots\}}}{\{\ldots\}}, \alt<3->{{\color{MidnightBlue}\{\ldots\}}}{\{\ldots\}}\)};
+    % \draw (0.4,0.4) rectangle (0.5, 0.3);
+    % \draw (0.5,0.4) rectangle (0.6, 0.3);
+
+    % \draw[OliveGreen,visible on=<2->] (0.415,0.423) -- (0.44,0.423);
+    % \node[OliveGreen,visible on=<2->] (name) at (0.2,0.4) {name of a mode};
+    % \draw[OliveGreen,->,visible on=<2->] (name.east) -- (0.4275,0.418);
+
+    % \draw[BrickRed,visible on=<3->] (0.457,0.423) -- (0.513,0.423);
+    % \node[BrickRed,text width=10em,align=center,visible on=<3->] (st) at (0.2,0.3) {Structural rules \\allowed in the mode};
+    % \draw[BrickRed,->,visible on=<3->] (st.east) -- (0.485,0.418);
+
+    % \draw[MidnightBlue,visible on=<4->] (0.53,0.423) -- (0.58,0.423);
+    % \node[MidnightBlue,align=center,visible on=<4->] (ty) at (0.2,0.2) {Types allowed in the mode};
+    % \draw[MidnightBlue,->,visible on=<4->] (ty.east) -- (0.555,0.418);
+
+    % \draw[->,visible on=<5->] (0.63,0.4) -- (0.63,0.2);
+    % \node[text width=12em,align=center,visible on=<5->] at (0.8,0.3) {Modes that can use \\values of this mode};
+    % \draw[->,,visible on=<6->] (0.63,0.5) -- (0.63,0.7);
+    % \node[text width=12em,align=center,visible on=<6->] at (0.8,0.6) {Modes whose values can \\be used in this mode};
+  \end{tikzpicture}
+\end{frame}
+
+\begin{frame}{Current Status}
+  \begin{itemize}
+  \item Preservation/progress are proved for declarative typing rules
+  \item Implementation based on algorithmic typing rules
+  \item Full embedding of \(\lambda^{\Box}\) is proved and mechanized
+  \end{itemize}
 \end{frame}
 
 \end{document}
