@@ -15,6 +15,7 @@
 \usepackage{tikz}
 \usetikzlibrary{calc,shapes.callouts}
 \usepackage{upquote}
+\usepackage{proof}
 \usepackage{wasysym}
 
 \setmainfont[Mapping=tex-text]{Noto Sans}
@@ -169,9 +170,55 @@
 \lstloadlanguages{Adjoint}
 \lstset{language=Adjoint}
 
+\newcommand{\ctxEmpty}{{\cdot}}
+\newcommand{\ctxCons}[2]{{#1 , #2}}
+\newcommand{\ctxDrop}[2]{{#1 |_{#2}}}
+% \newcommand{\ctxMode}[1]{{\underline{\mathsf{mode}}(#1)}}
+% \newcommand{\ctxGe}[2]{{#1_{\ge{}#2}}}
+% \newcommand{\ctxConv}[3]{{#1 \rightsquigarrow_{#2} {#3}}}
+
+% \newcommand{\subst}[5]{{[#1 / #2]^{#3}_{#4} #5}}
+\newcommand{\tmSub}[3]{[ #1 / #2 ] #3}
+
+\newcommand{\tyBox}[1]{{\Box #1}}
+\newcommand{\tyUp}[3]{{\uparrow^{#1}_{#2} #3}}
+\newcommand{\tyDown}[3]{{\downarrow^{#1}_{#2} #3}}
+\newcommand{\tyUnit}{{\top}}
+\newcommand{\tyLarr}[2]{{#1 \multimap #2}}
+\newcommand{\tyArr}[2]{{#1 \to #2}}
+
+\newcommand{\tmBoxName}{{\mathsf{box}}}
+\newcommand{\tmBox}[1]{{\tmBoxName\ (#1)}}
+\newcommand{\tmLetboxName}{{\mathsf{let}\ \mathsf{box}}}
+\newcommand{\tmLetbox}[3]{{\tmLetboxName\ (#1) = #2\ \mathsf{in}\ #3}}
+\newcommand{\tmLiftName}{{\mathsf{lift}}}
+\newcommand{\tmLift}[3]{{\tmLiftName^{#1}_{#2}\ (#3)}}
+\newcommand{\tmUnliftName}{{\mathsf{unlift}}}
+\newcommand{\tmUnlift}[3]{{\tmUnliftName^{#1}_{#2}\ (#3)}}
+\newcommand{\tmReturnName}{{\mathsf{return}}}
+\newcommand{\tmReturn}[3]{{\tmReturnName^{#1}_{#2}\ (#3)}}
+\newcommand{\tmLetreturnName}{{\mathsf{let}\ \mathsf{return}}}
+\newcommand{\tmLetreturn}[5]{{\tmLetreturnName^{#1}_{#2}\ (#3) = #4\ \mathsf{in}\ #5}}
+\newcommand{\tmUnit}{{\mathsf{unit}}}
+\newcommand{\tmLam}[4]{{\lambda (#1 {:}^{#2} #3) . #4}}
+\newcommand{\tmApp}[2]{{#1\ #2}}
+
+\newcommand{\synDef}{{:=}}
+\newcommand{\synOr}{{\ \ |\ \ }}
+\newcommand{\synOrHead}{{|}}
+
+\newcommand{\elevator}{\textsc{Elevator}\xspace}
+
+\newcommand{\modeSpec}{\mathcal{M}}
+\newcommand{\modeOrdLt}{<^{\modeSpec}}
+\newcommand{\modeOrdLe}{\le^{\modeSpec}}
+\newcommand{\modeMapSt}{{\mathtt{st}_{\modeSpec}}}
+\newcommand{\modeMapOp}{{\mathtt{op}_{\modeSpec}}}
+
 \begin{document}
 \begin{frame}
   \titlepage
+  \note{Hello, I'm Junyoung Jang, or Clare Jang from the CompLogic group, McGill University. Today, I'm gonna present you my research work on ``Multi-modal programming with resource guarantees.''}
 \end{frame}
 
 \begin{frame}[fragile]{Useful Modalities for Various Applications}
@@ -197,17 +244,18 @@
     draw=privacy,color=privacy,align=center]
     at ($(rp.east)+(\ht0+0.3cm,0.2cm)$) {Is resource\\access permitted?};
   \end{tikzpicture}
+  \note{First, why do we care about multiple modalities? Because we have multiple examples of useful modalities. For example, we use a modality for metaprogramming, to answer ``how to characterize code fragments''. Likewise, for resource availability, we use a modality to answer ``how many resources are available''. We use a modality for resource privacy as well, to tell whether resource access is permitted or not.}
 \end{frame}
 
 \begin{frame}{Modalities in Essence}
   \begin{tikzpicture}[fulloverlay]
 	\node[metaprogram!60] (mp) at (0.25,0.65) {\bfseries Metaprogramming};
-	\node[visible on=<2->,metaprogram,text width=14em,align=center] at ($(mp.south)-(-1cm,\ht0+0.3cm)$)
-    {\bfseries \alt<5->{{\color{white}Code/Program}}{{Code/Program}} Distinction\\with Intensionality};
+	\node[visible on=<2->,metaprogram,text width=20em,align=center] at ($(mp.south)-(-1cm,\ht0+0.3cm)$)
+    {\bfseries \alt<5->{{\color{white}Code/Program}}{{Code/Program}} Distinction\\with Intensional Code Fragments};
 
 	\node[linearity!60] (ra) at (0.6,0.5) {\bfseries Resource Availability};
 	\node[visible on=<3->,linearity,text width=17em,align=center] at ($(ra.south)-(-1.3cm,\ht0+0.3cm)$)
-    {\bfseries \alt<5->{{\color{white}Linear/Unrestricted}}{{Linear/Unrestricted}} Distinction\\with Structural Rules};
+    {\bfseries \alt<5->{{\color{white}Linear/Unrestricted}}{{Linear/Unrestricted}} Distinction\\with Restricted Structural Rules};
 
 	\node[privacy!60] (rp) at (0.4,0.3) {\bfseries Resource Privacy};
 	\node[visible on=<4->,privacy,text width=14em,align=center] at ($(rp.south)-(-1.1cm,\ht0+0.1cm)$)
@@ -216,49 +264,66 @@
 	\draw[visible on=<6->,rounded corners=0.5cm,draw=darkgreygreen] (0.05,0.75) rectangle (0.95,0.2);
 	\node[visible on=<6->,color=darkgreygreen,fill=white] at (0.5,0.75) {Single Uniform Framework};
   \end{tikzpicture}
+  \note{However, they all share one common aspect, arising from the very concept of modalities. Metaprogramming has a distinction between code and program, where code fragments are intensionally analyzed. In the case of resource availability, we distinguish linear resources from unrestricted resources, while allowing structural rules only for unrestricted resources. Likewise, we again put a distinction between two things, private secure data and public data, for resource privacy. In other words, they all have some ``distinctions'' between two modes, with some extra features such as intensional analysis or restricted structural rules. This observation allows us to capture all these modalities in a single uniform framework.}
 \end{frame}
 
 \begin{frame}{Modalities for Distinction}
   \begin{tikzpicture}[fulloverlay]
-    \node[visible on=<-1>,anchor=west] at (0.05,0.75) {For any two distinguished sectors \(m_1\) and \(m_2\),};
-    \node[visible on=<2>,anchor=west] at (0.05,0.75) {For \color{metaprogram}{\bfseries metaprogramming}};
-    \node[visible on=<3>,anchor=west] at (0.05,0.75) {For \color{privacy}{\bfseries resource privacy}};
+    \node[visible on=<-3>,anchor=west] at (0.05,0.75) {For any two distinguished modes \(m_1\) and \(m_2\),};
+    \node[visible on=<4>,anchor=west] at (0.05,0.75) {For \color{metaprogram}{\bfseries metaprogramming}};
+    \node[visible on=<5>,anchor=west] at (0.05,0.75) {For \color{linearity}{\bfseries resource availability}};
+    \node[visible on=<6>,anchor=west] at (0.05,0.75) {For \color{privacy}{\bfseries resource privacy}};
 
     \draw
-    (0.15,0.6) rectangle (0.45,0.45)
-    (0.15,0.45) rectangle (0.45,0.3);
-    \node[visible on=<-1>] at (0.3,0.525) {\(m_2\)};
-    \node[visible on=<-1>] at (0.3,0.375) {\(m_1\)};
-    \node[visible on=<2>,metaprogram] at (0.3,0.525) {\(c\) : Code};
-    \node[visible on=<2>,metaprogram] at (0.3,0.375) {\(p\) : Program};
-    \node[visible on=<3>,privacy] at (0.3,0.525) {\(p\) : \parbox{8em}{\centering Program with Public Resource}};
-    \node[visible on=<3>,privacy] at (0.3,0.375) {\(s\) : Secure Resource};
+    (0.125,0.6) rectangle (0.475,0.45)
+    (0.125,0.45) rectangle (0.475,0.3);
+    \node[visible on=<-3>] at (0.3,0.525) {\(m_2\)};
+    \node[visible on=<-3>] at (0.3,0.375) {\(m_1\)};
+    \node[visible on=<4>,metaprogram] at (0.3,0.525) {\(c\) \---- Code};
+    \node[visible on=<4>,metaprogram] at (0.3,0.375) {\(p\) \---- Program};
+    \node[visible on=<5>,linearity] at (0.3,0.525) {\(u\) \---- Unrestricted Resource};
+    \node[visible on=<5>,linearity] at (0.3,0.375) {\(p\) \---- Linear Program};
+    \node[visible on=<6>,privacy] at (0.3,0.525) {\(p\) \---- \parbox{8em}{\centering Program with Public Resource}};
+    \node[visible on=<6>,privacy] at (0.3,0.375) {\(s\) \---- Secure Resource};
 
-    \node[visible on=<-1>] at (0.7,0.525) {\(\uparrow^{m_2}_{m_1}\) : \parbox{10em}{\centering A modality ``going up'' from \(m_1\) to \(m_2\)}};
-    \node[visible on=<-1>] at (0.7,0.375) {\(\downarrow^{m_2}_{m_1}\) : \parbox{10em}{\centering A modality ``going down'' from \(m_2\) to \(m_1\)}};
-    \node[visible on=<2>] at (0.7,0.525) {\(\uparrow^{c}_{p}\) : \parbox{10em}{\centering A modality ``going up'' from \(p\) to \(c\)}};
-    \node[visible on=<2>] at (0.7,0.375) {\(\downarrow^{c}_{p}\) : \parbox{10em}{\centering A modality ``going down'' from \(c\) to \(p\)}};
-    \node[visible on=<3>] at (0.7,0.525) {\(\uparrow^{p}_{s}\) : \parbox{10em}{\centering A modality ``going up'' from \(s\) to \(p\)}};
-    \node[visible on=<3>] at (0.7,0.375) {\(\downarrow^{p}_{s}\) : \parbox{10em}{\centering A modality ``going down'' from \(p\) to \(s\)}};
+    \node[visible on=<2-3>] at (0.7,0.525) {\(\uparrow^{m_2}_{m_1}\) \---- \parbox{10em}{\centering A modality ``going up'' from \(m_1\) to \(m_2\)}};
+    \node[visible on=<3>] at (0.7,0.375) {\(\downarrow^{m_2}_{m_1}\) \---- \parbox{10em}{\centering A modality ``going down'' from \(m_2\) to \(m_1\)}};
+    \node[visible on=<4>] at (0.7,0.525) {\(\uparrow^{c}_{p}\) \---- \parbox{10em}{\centering A modality ``going up'' from \({\color{metaprogram}p}\) to \({\color{metaprogram}c}\)}};
+    \node[visible on=<4>] at (0.7,0.375) {\(\downarrow^{c}_{p}\) \---- \parbox{10em}{\centering A modality ``going down'' from \({\color{metaprogram}c}\) to \({\color{metaprogram}p}\)}};
+    \node[visible on=<5>] at (0.7,0.525) {\(\uparrow^{u}_{p}\) \---- \parbox{10em}{\centering A modality ``going up'' from \({\color{linearity}p}\) to \({\color{linearity}u}\)}};
+    \node[visible on=<5>] at (0.7,0.375) {\(\downarrow^{u}_{p}\) \---- \parbox{10em}{\centering A modality ``going down'' from \({\color{linearity}u}\) to \({\color{linearity}p}\)}};
+    \node[visible on=<6>] at (0.7,0.525) {\(\uparrow^{p}_{s}\) \---- \parbox{10em}{\centering A modality ``going up'' from \({\color{privacy}s}\) to \({\color{privacy}p}\)}};
+    \node[visible on=<6>] at (0.7,0.375) {\(\downarrow^{p}_{s}\) \---- \parbox{10em}{\centering A modality ``going down'' from \({\color{privacy}p}\) to \({\color{privacy}s}\)}};
   \end{tikzpicture}
+  \note{Basically, when we have two distinguished modes, \(m_1\) and \(m_2\), we use two modalities to connect them: Going-up modality, and going-down modality. This can be applied to any of the previous modality examples. For metaprogramming, we can put code as an upper mode and program as a lower mode. For resource availability, a mode for unrestricted resources goes on top of the linear program. Resource privacy also has a similar structure for modes. But why do we care the arrangement of modes? Why do we have two different modalities that ``going-up'' and ``going-down'', instead of one modality for ``moving-from-one-to-the-other''? This is because these two modalities has different meanings.}
 \end{frame}
 
 \begin{frame}{Going-up Modality}
   \begin{tikzpicture}[fulloverlay]
-    \node at (0.5,0.6) {\(\mathsf{lift}^{m_2}_{m_1} (M)\) : \parbox{19em}{\centering Lift an expression \(M\) in \(m_1\) to its AST in \(m_2\)\\{}It is of type \(\uparrow^{m_2}_{m_1} A\) in \(m_2\) if \(M : A\) in \(m_1\)}};
-    \node at (0.5,0.4) {\(\mathsf{unlift}^{m_2}_{m_1} (M)\) : Execute/splice-in an AST \(M\)};
+    \node at (0.5,0.6) {\(\mathsf{lift}^{m_2}_{m_1} (M)\) \---- \parbox{19em}{Lift the expression \(M\) from \(m_1\) to its AST in \(m_2\)\\{}Has the type \(\uparrow^{m_2}_{m_1} A\) in \(m_2\) if \(M : A\) in \(m_1\)}};
+    \node[visible on=<2->] at (0.5,0.4) {\(\mathsf{unlift}^{m_2}_{m_1} (M)\) \---- Execute/splice-in the value (an AST) of \(M\)};
   \end{tikzpicture}
+  \note{``Going-up'' modality allows an upper mode to treat an expression from a lower mode as an AST. Using the syntax ``lift'', we lift the expression \(M\) from mode \(m_1\) to its AST living in \(m_2\). When we have this AST, we can either execute it in the original mode \(m_1\) or splice it into another AST. Here, we use the syntax ``unlift'' for that.}
+  % \note{We treat an upper mode as a completely independent mode from any lower modes. In other words, an upper mode does not know how to execute an expression from lower modes, and cannot depend on any assumptions from those modes. Thus, when we want to introduce a ``going-up'' modality, we need to lift the lower mode expression \(M\) into its AST. For this, we use the syntax ``lift'' that lifts a term \(M\) from mode \(m_1\) to \(m_2\). When we come back from the upper mode \(m_2\) to the original mode \(m_1\) that the expression \(M\) for an AST comes from, we can either execute it or splice it into another AST. Here, we use the syntax ``unlift'' for this.}
 \end{frame}
 
 \begin{frame}{Going-down Modality}
   \begin{tikzpicture}[fulloverlay]
-    \node at (0.5,0.6) {\(\mathsf{return}^{m_2}_{m_1} (M)\) : \parbox{22em}{\centering Store an expression \(M\) in \(m_2\) for future use in \(m_2\)\\{}It is of type \(\downarrow^{m_2}_{m_1} A\) in \(m_1\) if \(M : A\) in \(m_2\)}};
-    \node at (0.5,0.4) {\(\mathsf{let}\ \mathsf{return}^{m_2}_{m_1} x = M\ \mathsf{in}\ N\) : \parbox{22em}{\centering Load the stored value pointed by \(M\) into \(x\)\\and continue with \(N\)}};
+    \node at (0.5,0.6) {\(\mathsf{return}^{m_2}_{m_1} (M)\) \---- \parbox{23em}{Store the expression \(M\) in \(m_2\) for future use in \(m_2\)\\{}Has the type \(\downarrow^{m_2}_{m_1} A\) in \(m_1\) if \(M : A\) in \(m_2\)}};
+    \node at (0.5,0.4) {\(\mathsf{let}\ \mathsf{return}^{m_2}_{m_1} x = M\ \mathsf{in}\ N\) \---- \parbox{22em}{Load the stored value pointed by \(M\) into \(x\)\\and continue with \(N\)}};
   \end{tikzpicture}
+  \note{On the other hand, ``Going-down'' modality allows one to store an expression from an upper mode and use it later. Using the syntax ``return'', we store the value of expression \(M\) from mode \(m_2\) and return a pointer of mode \(m_2\) for the stored location. When we want to load it back, we use ``let-return'' on the pointer \(M\), and it allows \(N\) to access the stored value. This pair of modalities allows us to construct other modalities using their combinations. Let's see a simple example for the case of metaprogramming.}
 \end{frame}
 
 \begin{frame}[fragile]{Metaprogramming Example}
   \begin{tikzpicture}[fulloverlay]
+    \node[black!70] at (0.85,0.75) {\small Modes};
+    \draw[black!70]
+    (0.75,0.7) rectangle (0.95,0.625)
+    node[pos=0.5] {\small \(c\) \---- Code};
+    \draw[black!70]
+    (0.75,0.625) rectangle (0.95,0.55)
+    node[pos=0.5] {\small \(p\) \---- Program};
     \node[text width=0.58\paperwidth,visible on=<1>] at (0.31,0.6) {
       \begin{lstlisting}
 pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
@@ -285,13 +350,34 @@ pow (suc n) =
 pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
 pow 0       = return$^c_p$ (lift$^c_p$ (fun x -> 1))
 pow (suc n) =
+  ws<<let return$\color{WildStrawberry}^c_p$ C = pow n in>>ws
+  return$^c_p$ (lift$^c_p$ (fun x -> x * (unlift$^c_p$ (C)) x))
+      \end{lstlisting}
+    };
+
+    \node[text width=0.58\paperwidth,visible on=<4>] at (0.31,0.6) {
+      \begin{lstlisting}
+pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
+pow 0       = return$^c_p$ (lift$^c_p$ (fun x -> 1))
+pow (suc n) =
   let return$^c_p$ C = pow n in
   nb<<return$\color{NavyBlue}^c_p$ (lift$\color{NavyBlue}^c_p$ (fun x -> x * (unlift$\color{NavyBlue}^c_p$ (C)) x))>>nb
       \end{lstlisting}
     };
-    \draw[NavyBlue,visible on=<3>] (0.255,0.495) -- (0.64,0.495);
+    \draw[NavyBlue,visible on=<4>] (0.255,0.495) -- (0.64,0.495);
 
-    \node[text width=0.58\paperwidth,visible on=<4->] at (0.31,0.6) {
+    \node[text width=0.58\paperwidth,visible on=<5>] at (0.31,0.6) {
+      \begin{lstlisting}
+pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
+pow 0       = return$^c_p$ (lift$^c_p$ (fun x -> 1))
+pow (suc n) =
+  let return$^c_p$ C = pow n in
+  return$^c_p$ (lift$^c_p$ (fun x -> x * (unlift$^c_p$ (C)) x))
+      \end{lstlisting}
+    };
+    \node[visible on=<5->,text width=\textwidth,anchor=west] at (0.015,0.25) {For example, \lstinline!pow 2! gives\\ \lstinline!return$^c_p$ (lift$^c_p$ (fun x$_1$ -> x$_1$ * (fun x$_2$ -> x$_2$ * (fun x$_3$ -> 1) x$_2$) x$_1$))!};
+
+    \node[text width=0.58\paperwidth,visible on=<6->] at (0.31,0.6) {
       \begin{lstlisting}
 pow : nat -> v|$^c_p$^|$^c_p$(nat -> nat)
 pow 0       = return$^c_p$ (lift$^c_p$ (fun x -> 1))
@@ -301,13 +387,20 @@ pow (suc n) =
       \end{lstlisting}
     };
 
-    \node[visible on=<5->,text width=\textwidth,anchor=west] at (0.015,0.25) {\lstinline!pow 2! gives\\ \lstinline!return$^c_p$ (lift$^c_p$ (fun x$_1$ -> x$_1$ * (fun x$_2$ -> x$_2$ * (fun x$_3$ -> 1) x$_2$) x$_1$))!};
-    \node[visible on=<6>] at (0.5,0.1) {But this requires {\color{WildStrawberry}\(O(n)\) store-loads} for every call!};
-  \end{tikzpicture}  
+    \node[visible on=<7>] at (0.5,0.1) {But this requires {\color{WildStrawberry}\(O(n)\) store-loads} for every call!};
+  \end{tikzpicture}
+  \note{I will use a code generator for the power function as an example. When we pass a number \(n\) to this function ``pow'', it returns a pointer to a code fragment for a function computing \(n\)-th power of the input argument. When the power is \(0\), we return a pointer to a code fragment, that, returns \(1\) for any argument. When the power is the successor of \(n\), we first load a code fragment to compute \(n\)-th power, and then splice it into a code fragment with one multiplication of the parameter \(x\). When we call this, for example, with the number \(2\), this generator gives a code fragment like this, which essentially computes \(x\) times \(x\) for the input \(x\). This is the traditional implementation of the power function, but we have one issue: we need \(O(n)\) number of stores and loads for every call of \(pow\)! Can we do better?}
 \end{frame}
 
 \begin{frame}[fragile]{Separation of Concern in Metaprogramming}
   \begin{tikzpicture}[fulloverlay]
+    \node[black!70] at (0.85,0.75) {\small Modes};
+    \draw[black!70]
+    (0.75,0.7) rectangle (0.95,0.625)
+    node[pos=0.5] {\small \(c\) \---- Code};
+    \draw[black!70]
+    (0.75,0.625) rectangle (0.95,0.55)
+    node[pos=0.5] {\small \(p\) \---- Program};
     \node[visible on=<1>,text width=0.58\paperwidth] at (0.31,0.5) {
       \begin{lstlisting}
 powHelper : nat -> ^|$^c_p$(nat -> nat)
@@ -360,137 +453,169 @@ powHelper 0       = lift$^c_p$ (fun x -> 1)
 powHelper (suc n) =
   lift$^c_p$ (fun x -> x * unlift$^c_p$ (powHelper n)) x))
 
+pow : v|$^c_p$nat -> v|$^c_p$^|$^c_p$(nat -> nat)
+pow dn =
+  let return$^c_p$ n = dn in
+  ws<<return$\color{WildStrawberry}^c_p$ (powHelper n)>>ws
+      \end{lstlisting}
+    };
+    \node[visible on=<4>,WildStrawberry] (single) at (0.65,0.28) {Single store};
+    \draw[visible on=<4>,->,WildStrawberry] (single) -- (0.33,0.33);
+
+    \node[visible on=<5>,text width=0.58\paperwidth] at (0.31,0.5) {
+      \begin{lstlisting}
+powHelper : nat -> ^|$^c_p$(nat -> nat)
+powHelper 0       = lift$^c_p$ (fun x -> 1)
+powHelper (suc n) =
+  lift$^c_p$ (fun x -> x * unlift$^c_p$ (powHelper n)) x))
+
 pow : ws<<v|$\color{WildStrawberry}^c_p$nat>>ws -> v|$^c_p$^|$^c_p$(nat -> nat)
 pow dn =
   let return$^c_p$ n = dn in
   return$^c_p$ (powHelper n)
       \end{lstlisting}
     };
-    \node[visible on=<4>,WildStrawberry] (separate) at (0.5,0.25) {Separate storing \lstinline!nat! from code fragment processing};
-    \draw[visible on=<4>,->,WildStrawberry] ($(separate.north)+(0.1,0)$) -- (0.18,0.45);
-\end{tikzpicture}  
+    \node[visible on=<5>,WildStrawberry] (separate) at (0.5,0.25) {Separate \lstinline!nat! store/loads from the composition of code fragments};
+    \draw[visible on=<5>,->,WildStrawberry] ($(separate.north)+(0.1,0)$) -- (0.18,0.45);
+  \end{tikzpicture}
+  \note{With explicit modes, yes, we can give a better implementation by separating concerns. Here, ``powHelper'' is a function to composing a code fragment for \(n\)-th power in the mode \(c\). As we live in mode \(c\) during the composition, we can directly call ``powHelper'' in the code fragment without unnecessary store-load. When we provide the actual function ``pow'', we need only one load and one store. Here, we accept a pointer to nat living in mode \(c\), so that we can use it in ``powHelper''. Thus, once we store a natural number and get a pointer to it, we no longer have \(O(n)\) store-loads like the previous example. In other words, this system provides a more fine-grained control over when store-load happens, and how we process code fragments. Now, let's go into more details of this system.}
 \end{frame}
 
-\begin{frame}[fragile]{Resource Availability Example}
-  \begin{tikzpicture}[fulloverlay]
-    \node[visible on=<1>,text width=0.58\paperwidth] at (0.31,0.5) {
-      \begin{lstlisting}
-withAlloc : nat -o nat -> (nat array -o nat * nat array) -o nat
+% \begin{frame}[fragile]{Resource Availability Example}
+%   \begin{tikzpicture}[fulloverlay]
+%     \node[visible on=<1>,text width=0.58\paperwidth] at (0.31,0.5) {
+%       \begin{lstlisting}
+% withAlloc : nat -o nat -> (nat array -o nat * nat array) -o nat
 
-read      : nat array -o nat        -o nat * nat array
+% read      : nat array -o nat        -o nat * nat array
 
-write     : nat array -o nat -o nat -o nat array
-      \end{lstlisting}
-    };
+% write     : nat array -o nat -o nat -o nat array
+%       \end{lstlisting}
+%     };
 
-    \node[visible on=<2>,text width=0.58\paperwidth] at (0.31,0.5) {
-      \begin{lstlisting}
-ws<<withAlloc : nat -o nat -> (nat array -o nat * nat array) -o nat>>ws
+%     \node[visible on=<2>,text width=0.58\paperwidth] at (0.31,0.5) {
+%       \begin{lstlisting}
+% ws<<withAlloc : nat -o nat -> (nat array -o nat * nat array) -o nat>>ws
 
-read      : nat array -o nat        -o nat * nat array
+% read      : nat array -o nat        -o nat * nat array
 
-write     : nat array -o nat -o nat -o nat array
-      \end{lstlisting}
-    };
-    \node[visible on=<2>,anchor=base,WildStrawberry] at (0.205,0.64) {size};
-    \node[visible on=<2>,anchor=base,WildStrawberry] at (0.3,0.56) {initial entry};
-    \node[visible on=<2>,anchor=base,WildStrawberry] at (0.57,0.64) {processing function};
+% write     : nat array -o nat -o nat -o nat array
+%       \end{lstlisting}
+%     };
+%     \node[visible on=<2>,anchor=base,WildStrawberry] at (0.205,0.64) {size};
+%     \node[visible on=<2>,anchor=base,WildStrawberry] at (0.3,0.56) {initial entry};
+%     \node[visible on=<2>,anchor=base,WildStrawberry] at (0.57,0.64) {processing function};
 
-    \node[visible on=<3>,text width=0.58\paperwidth] at (0.31,0.5) {
-      \begin{lstlisting}
-withAlloc : nat -o nat -> (nat array -o nat * nat array) -o nat
+%     \node[visible on=<3>,text width=0.58\paperwidth] at (0.31,0.5) {
+%       \begin{lstlisting}
+% withAlloc : nat -o nat -> (nat array -o nat * nat array) -o nat
 
-ws<<read      : nat array -o nat        -o nat * nat array>>ws
+% ws<<read      : nat array -o nat        -o nat * nat array>>ws
 
-write     : nat array -o nat -o nat -o nat array
-      \end{lstlisting}
-    };
-    \node[visible on=<3>,anchor=base,WildStrawberry] at (0.245,0.55) {array tag};
-    \node[visible on=<3>,anchor=base,WildStrawberry] at (0.38,0.47) {index};
+% write     : nat array -o nat -o nat -o nat array
+%       \end{lstlisting}
+%     };
+%     \node[visible on=<3>,anchor=base,WildStrawberry] at (0.245,0.55) {array tag};
+%     \node[visible on=<3>,anchor=base,WildStrawberry] at (0.38,0.47) {index};
 
-    \node[visible on=<4>,text width=0.58\paperwidth] at (0.31,0.5) {
-      \begin{lstlisting}
-withAlloc : nat -o nat -> (nat array -o nat * nat array) -o nat
+%     \node[visible on=<4>,text width=0.58\paperwidth] at (0.31,0.5) {
+%       \begin{lstlisting}
+% withAlloc : nat -o nat -> (nat array -o nat * nat array) -o nat
 
-read      : nat array -o nat        -o nat * nat array
+% read      : nat array -o nat        -o nat * nat array
 
-ws<<write     : nat array -o nat -o nat -o nat array>>ws
-      \end{lstlisting}
-    };
-    \node[visible on=<4>,anchor=base,WildStrawberry] at (0.245,0.45) {array tag};
-    \node[visible on=<4>,anchor=base,WildStrawberry] at (0.38,0.37) {index};
-    \node[visible on=<4>,anchor=base,WildStrawberry] at (0.47,0.45) {new value};
+% ws<<write     : nat array -o nat -o nat -o nat array>>ws
+%       \end{lstlisting}
+%     };
+%     \node[visible on=<4>,anchor=base,WildStrawberry] at (0.245,0.45) {array tag};
+%     \node[visible on=<4>,anchor=base,WildStrawberry] at (0.38,0.37) {index};
+%     \node[visible on=<4>,anchor=base,WildStrawberry] at (0.47,0.45) {new value};
 
-    \node[visible on=<5>,text width=0.58\paperwidth] at (0.31,0.4) {
-      \begin{lstlisting}
-foldRight : nat ->
-            v|$^{c}_{p}$^|$^{c}_{p}$ ((nat -o nat -o nat) ->
-                    nat -o
-                    nat array -o
-                    (nat * nat array))
-foldRight 0       =
-  return$^{c}_{p}$ (lift$^{c}_{p}$ (fun f -> fun z -o fun xs -o (z , xs)))
-foldRight (suc n) =
-  let return$^{c}_{p}$ C = foldRight n in
-  let return$^{c}_{p}$ N = codifyNat n in
-  return$^{c}_{p}$ (lift$^{c}_{p}$ (fun f -> fun z -o fun xs0 -o
-    llet (v, xs1) = read xs0 (unlift$^{c}_{p}$ N) in
-    (unlift$^{c}_{p}$ C) f (f z) xs1))
-      \end{lstlisting}
-    };
-    \node[visible on=<6>,text width=0.58\paperwidth] at (0.31,0.4) {
-      \begin{lstlisting}
-foldRight : nat ws<<->>>ws
-            v|$^{c}_{p}$^|$^{c}_{p}$ ((nat -o nat -o nat) ws<<->>>ws
-                    nat -o
-                    nat array -o
-                    (nat * nat array))
-foldRight 0       =
-  return$^{c}_{p}$ (lift$^{c}_{p}$ (ws<<fun f ->>>ws fun z -o fun xs -o (z , xs)))
-foldRight (suc n) =
-  let return$^{c}_{p}$ C = foldRight n in
-  let return$^{c}_{p}$ N = codifyNat n in
-  return$^{c}_{p}$ (lift$^{c}_{p}$ (ws<<fun f ->>>ws fun z -o fun xs0 -o
-    llet (v, xs1) = read xs0 (unlift$^{c}_{p}$ N) in
-    (unlift$^{c}_{p}$ C) f (f z) xs1))
-      \end{lstlisting}
-    };
-    \node[visible on=<6>,WildStrawberry] at (0.8,0.7) {Syntactic sugar of \lstinline!v|$^{u}_{p}$^|$^{u}_{p}$ A -o B!};
-    \node[visible on=<7>,text width=0.58\paperwidth] at (0.31,0.4) {
-      \begin{lstlisting}
-foldRight : nat ->
-            v|$^{c}_{p}$^|$^{c}_{p}$ ((nat -o nat -o nat) ->
-                    nat -o
-                    nat array -o
-                    (nat * nat array))
-foldRight 0       =
-  return$^{c}_{p}$ (lift$^{c}_{p}$ (fun f -> fun z -o fun xs -o (z , xs)))
-foldRight (suc n) =
-  let return$^{c}_{p}$ C = foldRight n in
-  let return$^{c}_{p}$ N = ws<<codifyNat n>>ws in
-  return$^{c}_{p}$ (lift$^{c}_{p}$ (fun f -> fun z -o fun xs0 -o
-    llet (v, xs1) = read xs0 (unlift$^{c}_{p}$ N) in
-    (unlift$^{c}_{p}$ C) f (f z) xs1))
-      \end{lstlisting}
-    };
-    \node[visible on=<7>,WildStrawberry] at (0.8,0.3) {\lstinline!codifyNat : nat -> v|$^{c}_{p}$^|$^{c}_{p}$nat!};
+%     \node[visible on=<5>,text width=0.58\paperwidth] at (0.31,0.4) {
+%       \begin{lstlisting}
+% foldRight : nat ->
+%             v|$^{c}_{p}$^|$^{c}_{p}$ ((nat -o nat -o nat) ->
+%                     nat -o
+%                     nat array -o
+%                     (nat * nat array))
+% foldRight 0       =
+%   return$^{c}_{p}$ (lift$^{c}_{p}$ (fun f -> fun z -o fun xs -o (z , xs)))
+% foldRight (suc n) =
+%   let return$^{c}_{p}$ C = foldRight n in
+%   let return$^{c}_{p}$ N = codifyNat n in
+%   return$^{c}_{p}$ (lift$^{c}_{p}$ (fun f -> fun z -o fun xs0 -o
+%     llet (v, xs1) = read xs0 (unlift$^{c}_{p}$ N) in
+%     (unlift$^{c}_{p}$ C) f (f z) xs1))
+%       \end{lstlisting}
+%     };
+%     \node[visible on=<6>,text width=0.58\paperwidth] at (0.31,0.4) {
+%       \begin{lstlisting}
+% foldRight : nat ws<<->>>ws
+%             v|$^{c}_{p}$^|$^{c}_{p}$ ((nat -o nat -o nat) ws<<->>>ws
+%                     nat -o
+%                     nat array -o
+%                     (nat * nat array))
+% foldRight 0       =
+%   return$^{c}_{p}$ (lift$^{c}_{p}$ (ws<<fun f ->>>ws fun z -o fun xs -o (z , xs)))
+% foldRight (suc n) =
+%   let return$^{c}_{p}$ C = foldRight n in
+%   let return$^{c}_{p}$ N = codifyNat n in
+%   return$^{c}_{p}$ (lift$^{c}_{p}$ (ws<<fun f ->>>ws fun z -o fun xs0 -o
+%     llet (v, xs1) = read xs0 (unlift$^{c}_{p}$ N) in
+%     (unlift$^{c}_{p}$ C) f (f z) xs1))
+%       \end{lstlisting}
+%     };
+%     \node[visible on=<6>,WildStrawberry] at (0.8,0.7) {Syntactic sugar of \lstinline!v|$^{u}_{p}$^|$^{u}_{p}$ A -o B!};
+%     \node[visible on=<7>,text width=0.58\paperwidth] at (0.31,0.4) {
+%       \begin{lstlisting}
+% foldRight : nat ->
+%             v|$^{c}_{p}$^|$^{c}_{p}$ ((nat -o nat -o nat) ->
+%                     nat -o
+%                     nat array -o
+%                     (nat * nat array))
+% foldRight 0       =
+%   return$^{c}_{p}$ (lift$^{c}_{p}$ (fun f -> fun z -o fun xs -o (z , xs)))
+% foldRight (suc n) =
+%   let return$^{c}_{p}$ C = foldRight n in
+%   let return$^{c}_{p}$ N = ws<<codifyNat n>>ws in
+%   return$^{c}_{p}$ (lift$^{c}_{p}$ (fun f -> fun z -o fun xs0 -o
+%     llet (v, xs1) = read xs0 (unlift$^{c}_{p}$ N) in
+%     (unlift$^{c}_{p}$ C) f (f z) xs1))
+%       \end{lstlisting}
+%     };
+%     \node[visible on=<7>,WildStrawberry] at (0.8,0.3) {\lstinline!codifyNat : nat -> v|$^{c}_{p}$^|$^{c}_{p}$nat!};
 
-    \node[visible on=<8->,text width=0.58\paperwidth] at (0.31,0.6) {
-      \begin{lstlisting}
-let size = 5 in
-m<<let return$^{c}_{p}$ fold = foldRight size in>>m
-withAlloc size 1
-  (fun xs0 -o
-    l<<llet xs1 = write xs0 2 2 in>>l
-    m<<(unlift$^{c}_{p}$ fold) (+) 0 xs1>>m)
-      \end{lstlisting}
-    };
-    \node[visible on=<9>] at (0.5,0.3) {We can use {\color{metaprogram}metaprogramming} under the existence of {\color{linearity}a side effect}!};
-  \end{tikzpicture}  
+%     \node[visible on=<8->,text width=0.58\paperwidth] at (0.31,0.6) {
+%       \begin{lstlisting}
+% let size = 5 in
+% m<<let return$^{c}_{p}$ fold = foldRight size in>>m
+% withAlloc size 1
+%   (fun xs0 -o
+%     l<<llet xs1 = write xs0 2 2 in>>l
+%     m<<(unlift$^{c}_{p}$ fold) (+) 0 xs1>>m)
+%       \end{lstlisting}
+%     };
+%     \node[visible on=<9>] at (0.5,0.3) {We can use {\color{metaprogram}metaprogramming} under the existence of {\color{linearity}a side effect}!};
+%   \end{tikzpicture}  
+% \end{frame}
+
+\begin{frame}[fragile]{Syntax}
+  \[
+    \begin{array}{llcl}
+      \text{Modes} & m, n, l, h & & \\[1em]
+      \text{Types}   & S , T  & \synDef & \tyUp{n}{l}{S} \synOr \tyDown{h}{n}{S} \synOr \tyLarr{S}{T} \synOr \ldots\\[0.5em]
+      \text{Terms}   & L , M  & \synDef & x \synOr \tmLift{n}{l}{L} \synOr \tmUnlift{n}{l}{L}\\[0.2em]
+                   &        & \synOrHead & \tmReturn{h}{n}{L} \synOr \tmLetreturn{h}{n}{x}{L}{M}\\[0.2em]
+                   &        & \synOrHead & \tmLam{x}{n}{T}{L} \synOr \tmApp{L}{M} \synOr \ldots\\[1em]
+      \text{Context} & \Gamma & \synDef & \ctxEmpty \synOr \ctxCons{\Gamma}{x{:}^nS}\\[0.5em]
+    \end{array}
+  \]
+  \note{The syntax for this system is simple; we have going-up and going-down modalities indexed by departing and arriving modes, and possibly linear function type, as we want to capture resource availability as well, and introduction and elimination forms for these types. Note that we annotate each assumption with a mode. This mode will be used to validate that an upper mode expression depends on no lower mode assumptions, so that an upper mode expression can be stored independently of a lower mode environment. However, this syntax does not allow us to capture different varieties of modalities. The power comes from a parameter for this system, called mode specification.}
 \end{frame}
 
 \begin{frame}[fragile]{Mode Specification}
   \begin{tikzpicture}[fulloverlay]
+    \node[anchor=west] at (0.02,0.78) {Mode specification \(\modeSpec\) is the description for modes:};
     \node at (0.5,0.65) {\(\vdots\)};
     \draw (0.4,0.6) rectangle (0.5,0.5);
     \draw (0.5,0.6) rectangle (0.6,0.5);
@@ -506,18 +631,21 @@ withAlloc size 1
     \draw[OliveGreen,->,visible on=<2->] (name.east) -- (0.4275,0.418);
 
     \draw[BrickRed,visible on=<3->] (0.457,0.423) -- (0.513,0.423);
-    \node[BrickRed,text width=10em,align=center,visible on=<3->] (st) at (0.2,0.3) {Structural rules \\allowed in the mode};
+    \node[BrickRed,text width=12em,align=center,visible on=<3->] (st) at (0.2,0.3) {Structural rules allowed \\in the mode (\(\modeMapSt(m)\))};
     \draw[BrickRed,->,visible on=<3->] (st.east) -- (0.485,0.418);
 
     \draw[MidnightBlue,visible on=<4->] (0.53,0.423) -- (0.58,0.423);
-    \node[MidnightBlue,align=center,visible on=<4->] (ty) at (0.2,0.2) {Types allowed in the mode};
+    \node[MidnightBlue,align=center,visible on=<4->] (ty) at (0.2,0.18) {Types allowed \\in the mode (\(\modeMapOp(m)\))};
     \draw[MidnightBlue,->,visible on=<4->] (ty.east) -- (0.555,0.418);
 
-    \draw[->,visible on=<5->] (0.63,0.4) -- (0.63,0.2);
-    \node[text width=12em,align=center,visible on=<5->] at (0.8,0.3) {Modes that can use \\values of this mode};
-    \draw[->,visible on=<6->] (0.63,0.5) -- (0.63,0.7);
-    \node[text width=12em,align=center,visible on=<6->] at (0.8,0.6) {Modes whose values can \\be used in this mode};
+    \draw[->,visible on=<5->] (0.63,0.5) -- (0.63,0.7);
+    \node[text width=12em,align=center,visible on=<6->] at (0.8,0.6) {Modes whose \\{}assumptions can \\{}be used in the mode \(m\)};
+    \draw[->,visible on=<6->] (0.63,0.4) -- (0.63,0.2);
+    \node[text width=12em,align=center,visible on=<5->] at (0.8,0.3) {Modes that can use \\{}assumptions from \\{}the mode \(m\)};
+
+    \node[visible on=<7->,rotate=90] at (0.8,0.45) {\(\modeOrdLt\)};
   \end{tikzpicture}
+  \note{A mode specification curly M is the description for modes. In this description, we have, first, which modes are there, i.e. the names of modes. Second, which structural rules are allowed in each mode. Each mode can allow any combinations of contraction and weakening rules. We will use \(\modeMapSt(m)\) to refer to this set of rules for mode \(m\). Third, which types are allowed in each mode. We will use \(\modeMapOp(m)\) to refer to this set of allowed types for mode \(m\). Finally, we give which mode goes on top of other modes. This arrangement specifies when an expression in a mode can depend on an assumption of another mode, as well as when going-up and going-down modalities are possible. We refer to this ordering of modes using this less-than relation decorated with the mode specification. Let's see some example mode specifications.}
 \end{frame}
 
 \begin{frame}[fragile]{Examples of Mode Specifications}
@@ -531,12 +659,12 @@ withAlloc size 1
 
     \draw
     (0.4,0.775) rectangle (0.6,0.7)
-    node[pos=0.5] {\(c\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\uparrow\}\)};
+    node[pos=0.5] {\(c\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\uparrow,\multimap\}\)};
     \draw
     (0.4,0.7) rectangle (0.6,0.625)
     node[pos=0.5] (meta) {\(p\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\downarrow,\multimap\}\)};
 
-    \node[text width=15em,align=center] at ($(meta.south)-(0,0.05)$) {Metaprogramming system \\based on S4 modal logic};
+    \node[text width=17em,align=center] at ($(meta.south)-(0,0.05)$) {Metaprogramming system \\with the separation of concerns};
 
     \draw
     (0.7,0.775) rectangle (0.9,0.7)
@@ -558,7 +686,7 @@ withAlloc size 1
 
     \draw
     (0.4,0.45) rectangle (0.6,0.375)
-    node[pos=0.5] {\(c\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\uparrow\}\)};
+    node[pos=0.5] {\(c\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\uparrow,\multimap\}\)};
     \draw
     (0.4,0.375) rectangle (0.6,0.3)
     node[pos=0.5] {\(p\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\uparrow,\downarrow,\multimap\}\)};
@@ -570,7 +698,7 @@ withAlloc size 1
 
     \draw
     (0.65,0.45) rectangle (0.8,0.375)
-    node[pos=0.5] {\(c\) : \(\{\}, \{\uparrow\}\)};
+    node[pos=0.5] {\(c\) : \(\{\}, \{\uparrow,\multimap\}\)};
     \draw
     (0.8,0.45) rectangle (0.95,0.375)
     node[pos=0.5] {\(u\) : \(\{\mathbf{Co}, \mathbf{Wk}\}, \{\uparrow\}\)};
@@ -601,13 +729,105 @@ withAlloc size 1
     % \draw[->,,visible on=<6->] (0.63,0.5) -- (0.63,0.7);
     % \node[text width=12em,align=center,visible on=<6->] at (0.8,0.6) {Modes whose values can \\be used in this mode};
   \end{tikzpicture}
+  \note{We have the simplest mode specification for the first: one for Simply-typed lambda calculus. Here, we have only one mode, which allows no going-up or down modalities but function space, and all structural rules. If we allow two modes, \(c\) and \(p\), where both have the function spaces, and each has the corresponding going-up or down modality. This gives a metaprogramming system allowing the previous ``powHelper'' example, where we distinguish two modes explicitly. By removing structural rules from a mode, we get a linear type system, and by putting a mode under the program mode \(p\), we get a resource privacy. Furthermore, we can combine these modes in any ways.}
 \end{frame}
 
-\begin{frame}{Current Status}
+\begin{frame}{Well-modedness Rules of Modalities}
+  \[
+    \begin{array}{c}
+    \boxed{\vdash^n_{\modeSpec} S : *}\\[3em]
+    \infer[\mathtt{WM}\tyUp{}{}{}]
+    {\vdash^n_{\modeSpec} \tyUp{n}{l}{S} : *}
+    {\vdash^l_{\modeSpec} S : *
+    \qquad l \modeOrdLt n
+    \qquad {\alt<2>{\color{BrickRed}}{}\tyUp{}{}{} \in \modeMapOp(n)}}
+    \\[2em]
+    \infer[\mathtt{WM}\tyDown{}{}{}]
+    {\vdash^n_{\modeSpec} \tyDown{h}{n}{S} : *}
+    {\vdash^h_{\modeSpec} S : *
+    \qquad n \modeOrdLt h
+    \qquad \tyDown{}{}{} \in \modeMapOp(n)}
+    \end{array}
+  \]
+  \note{Once we have the mode specification, we can first check whether a type is valid in a mode. We call this well-modedness, and its judgement defined by these rules. Going-up modality is valid only when the modified type is valid in the departing mode and the destination mode allows the modality. Likewise for going-down modality.}
+\end{frame}
+
+\begin{frame}{Typing Rules of Modalities}
+  \[
+    \begin{array}{c}
+      \boxed{\Gamma \vdash^n_{\modeSpec} L : S}\\[3em]
+      \infer[\mathtt{I}\tyUp{}{}{}]
+      {\Gamma \vdash^n_{\modeSpec} \tmLift{n}{l}{L} : \tyUp{n}{l}{S}}
+      {\Gamma \vdash^l_{\modeSpec} L : S}
+      \qquad
+      \infer[\mathtt{E}\tyUp{}{}{}]
+      {\Gamma \vdash^n_{\modeSpec} \tmUnlift{h}{n}{L} : S}
+      {{\alt<2>{\color{BrickRed}}{}\vdash^h_{\modeSpec} \Gamma}
+      \qquad \Gamma \vdash^h_{\modeSpec} L : \tyUp{h}{n}{S}}
+      \\[2em]
+      \infer[\mathtt{I}\tyDown{}{}{}]
+      {\Gamma \vdash^n_{\modeSpec} \tmReturn{h}{n}{L} : \tyDown{h}{n}{S}}
+      {{\alt<2>{\color{BrickRed}}{}\vdash^h_{\modeSpec} \Gamma}
+      \qquad \Gamma \vdash^h_{\modeSpec} L : S}
+      \qquad
+      \infer[\mathtt{E}\tyDown{}{}{}]
+      {{\alt<3>{\color{BrickRed}}{}\ctxCons{\Gamma}{\Gamma'}} \vdash^n_{\modeSpec} \tmLetreturn{h}{n}{x}{L}{M} : S}
+      {{\alt<3>{\color{BrickRed}}{}\Gamma'} \vdash^n_{\modeSpec} L : \tyDown{h}{n}{T}
+      \qquad \ctxCons{{\alt<3>{\color{BrickRed}}{}\Gamma}}{x{:}^hT} \vdash^n_{\modeSpec} M : S}
+    \end{array}
+  \]
+  \note{Once we have well-moded types, we can check a term is well-typed under a context. Here, these premises check whether the context contains any invalid assumptions, i.e. assumptions from lower modes. Note that, the rule for let-return, which has two sub-expressions, splits context into two; this is to declaratively allow substructural modes such as linear modes.}
+\end{frame}
+
+\begin{frame}{Typing Rules for Assumptions}
+  \[
+    \begin{array}{c}
+      \infer[\mathtt{var}]
+      {\ctxCons{\ctxEmpty}{x{:}^nS} \vdash^n_{\modeSpec} x : S}
+      {}
+      \\[2em]
+      \infer[\mathtt{weaken}]
+      {\ctxCons{\Gamma}{x{:}^mT} \vdash^n_{\modeSpec} L : S}
+      {\Gamma \vdash^n_{\modeSpec} L : S
+      \qquad {\alt<2>{\color{BrickRed}}{}\mathtt{Wk} \in \modeMapSt(m)}}
+      \\[2em]
+      \infer[\mathtt{contract}]
+      {\ctxCons{\Gamma}{x{:}^mT} \vdash^n_{\modeSpec} L : S}
+      {\ctxCons{\ctxCons{\Gamma}{x{:}^mT}}{x{:}^mT} \vdash^n_{\modeSpec} L : S
+      \qquad {\alt<2>{\color{BrickRed}}{}\mathtt{Co} \in \modeMapSt(m)}}
+    \end{array}
+  \]
+  \note{To deal with substructural modes, we have a variable rule that allows no other assumptions, and two structural rules allowed only in specified modes. These rules allow maximal freedom to this system, in terms of both resource availability and privacy.}
+\end{frame}
+
+\begin{frame}{Other Works on Multi-modal Systems}
+  \begin{itemize}
+  \item System for Session Types~[Pruiksma~and~Pfenning~2021]
+  \item Systems without metaprogramming support~[Orchard~et~al.~2019,Choudhury~et~al.~2021,Moon~et~al.~2021]
+  \item Systems without resource guarantees~[Gratzer~et~al.~2020]
+  \item Other System~[Abel~and~Bernardy~2020]
+  \end{itemize}
+  \note{There are other works has been done on multi-modal systems. Pruiksma and Pfenning develope a system for session types using this two modality approach, but do not apply it to functional programming. Orchard et al, Choudhury et al, and Moon et al describe a systems for resource availability and privacy, but they come without metaprogramming support. Another multi-modal system from Gratzer et al comes without resource guarantees such as linearity. Abel and Bernardy's system is most comparable to this system in terms of its power, but their system has only one indexed modality instead of two, and thus they cannot implement, for example, ``powHelper''-like efficient code generator.}
+\end{frame}
+
+\begin{frame}{Current Status of Project}
   \begin{itemize}
   \item Preservation/progress are proved for declarative typing rules
   \item Implementation based on algorithmic typing rules
   \item Full embedding of \(\lambda^{\Box}\) is proved and mechanized
+  \end{itemize}
+  \note{For this system, we currently have preservation and progress proofs for declarative typing rules I introduced here, and an interpreter implementation based on algorithmic typing rules. Also, we proved that we can fully embed \(\lambda^{\Box}\), one of the most commonly used bases of staged programming and metaprogramming, into this system. Thank you for listening, and please feel free to ask any questions!}
+\end{frame}
+
+\begin{frame}{References}
+  \scriptsize
+  \begin{itemize}
+  \item Andreas Abel and Jean-Philippe Bernardy. 2020. A Unified View of Modalities in Type Systems. \textit{Proc. ACM Program. Lang.} 4, ICFP, Article 90 (aug 2020), 28 pages. \url{https://doi.org/10.1145/3408972}
+  \item Pritam Choudhury, Harley Eades III, Richard A. Eisenberg, and Stephanie Weirich. 2021. A Graded Dependent Type System with a Usage-Aware Semantics. \textit{Proc. ACM Program. Lang.} 5, POPL, Article 50 (jan 2021), 32 pages. \url{https://doi.org/10.1145/3434331}
+  \item Daniel Gratzer, G. A. Kavvos, Andreas Nuyts, and Lars Birkedal. 2020. Multimodal Dependent Type Theory. In \textit{Proceedings of the 35th Annual ACM/IEEE Symposium on Logic in Computer Science (Saarbrücken, Germany) (LICS ’20)}. Association for Computing Machinery, New York, NY, USA, 492–506. \url{https://doi.org/10.1145/3373718.3394736}
+  \item Benjamin Moon, Harley Eades III, and Dominic Orchard. 2021. Graded Modal Dependent Type Theory. In \textit{Programming Languages and Systems}, Nobuko Yoshida (Ed.). Springer International Publishing, Cham, 462–490.
+  \item Dominic Orchard, Vilem-Benjamin Liepelt, and Harley Eades III. 2019. Quantitative Program Reasoning with Graded Modal Types. \textit{Proc. ACM Program. Lang.} 3, ICFP, Article 110 (jul 2019), 30 pages. \url{https://doi.org/10.1145/3341714}
+  \item Klaas Pruiksma and Frank Pfenning. 2021. A message-passing interpretation of adjoint logic. \textit{Journal of Logical and Algebraic Methods in Programming} 120 (4 2021), 100637. \url{https://doi.org/10.1016/J.JLAMP.2020.100637}
   \end{itemize}
 \end{frame}
 
